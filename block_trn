@@ -1,0 +1,29 @@
+tic
+clear;
+close all;
+
+I=imread('2.jpg');
+if size(I,3)==3
+    I=rgb2gray(I);
+end
+%size of image
+[M,N]=size(I);
+%convert to double
+I=double(I);
+Y=zeros(M,N);
+%% compression
+blksize=4;    %Block Size
+mu=colfilt(I,[blksize,blksize],'distinct',@(x) ones(blksize^2,1)*mean(x));
+sigma=colfilt(I,[blksize,blksize],'distinct',@(x) ones(blksize^2,1)*std(x));
+q=I>mu;
+q=colfilt(q,[blksize,blksize],'distinct',@(x) ones(blksize^2,1)*sum(x));
+m=blksize^2;                          %length*width of block
+a=mu-sigma.*(sqrt(q./m-q));           
+b=mu+sigma.*(sqrt(m-q./q));           
+H=I>=mu;                              %elements of Bitmap
+Y(H)=a(H);
+Y(~H)=b(~H);
+Y=uint8(Y);                           %output BTC image
+figure,imshow(Y)
+toc
+
